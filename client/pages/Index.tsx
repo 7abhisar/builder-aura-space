@@ -319,9 +319,14 @@ export default function Index() {
                   <div key={post.id} className="flex items-start space-x-3 p-4 rounded-lg border bg-card">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-blue-600">{post.author}</span>
                         <div className="flex items-center space-x-2">
-                          <Badge 
+                          <span className="text-sm font-medium text-blue-600">{post.author}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {post.platform}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge
                             variant={post.sentiment === "positive" ? "default" : post.sentiment === "negative" ? "destructive" : "secondary"}
                             className={
                               post.sentiment === "positive" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" :
@@ -331,7 +336,9 @@ export default function Index() {
                           >
                             {post.sentiment} ({Math.round(post.confidence * 100)}%)
                           </Badge>
-                          <span className="text-xs text-muted-foreground">{post.timestamp}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(post.timestamp).toLocaleTimeString()}
+                          </span>
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground">{post.content}</p>
