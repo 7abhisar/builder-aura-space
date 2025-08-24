@@ -19,9 +19,16 @@ const COLORS = {
 export default function Index() {
   const [hashtag, setHashtag] = useState("#campaign");
   const [isMonitoring, setIsMonitoring] = useState(false);
-  const [sentimentData, setSentimentData] = useState<SentimentData[]>(generateMockSentimentData());
-  const [posts, setPosts] = useState<Post[]>(generateMockPosts());
-  const [totalPosts, setTotalPosts] = useState(1247);
+  const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
+  const [posts, setPosts] = useState<SentimentPost[]>([]);
+  const [stats, setStats] = useState<SentimentStats>({
+    totalPosts: 0,
+    positivePosts: 0,
+    neutralPosts: 0,
+    negativePosts: 0,
+    avgSentiment: 0
+  });
+  const [loading, setLoading] = useState(false);
 
   // Calculate sentiment distribution
   const sentimentDistribution = [
@@ -30,13 +37,67 @@ export default function Index() {
     { name: "Negative", value: posts.filter(p => p.sentiment === "negative").length, color: COLORS.negative }
   ];
 
-  const handleStartMonitoring = () => {
-    setIsMonitoring(true);
-    // In a real app, this would start the websocket connection
+  // Format sentiment data for charts
+  const chartSentimentData = sentimentData.map(data => ({
+    ...data,
+    timestamp: new Date(data.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  }));
+
+  const handleStartMonitoring = async () => {
+    if (!hashtag.trim()) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/sentiment/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hashtag: hashtag.trim() } as StartMonitoringRequest)
+      });
+
+      if (response.ok) {
+        const data: SentimentStreamResponse = await response.json();
+        setSentimentData(data.sentimentData);
+        setPosts(data.posts);
+        setStats(data.stats);
+        setIsMonitoring(data.isActive);
+      }
+    } catch (error) {
+      console.error('Error starting monitoring:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleStopMonitoring = () => {
-    setIsMonitoring(false);
+  const handleStopMonitoring = async () => {
+    if (!hashtag.trim()) return;
+
+    try {
+      const response = await fetch(`/api/sentiment/stop/${encodeURIComponent(hashtag.trim())}`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        setIsMonitoring(false);
+      }
+    } catch (error) {
+      console.error('Error stopping monitoring:', error);
+    }
+  };
+
+  // Fetch existing data for hashtag
+  const fetchHashtagData = async (tag: string) => {
+    try {
+      const response = await fetch(`/api/sentiment/${encodeURIComponent(tag)}`);
+      if (response.ok) {
+        const data: SentimentStreamResponse = await response.json();
+        setSentimentData(data.sentimentData);
+        setPosts(data.posts);
+        setStats(data.stats);
+        setIsMonitoring(data.isActive);
+      }
+    } catch (error) {
+      console.error('Error fetching hashtag data:', error);
+    }
   };
 
   // Simulate real-time updates
