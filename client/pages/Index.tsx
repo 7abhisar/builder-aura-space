@@ -100,40 +100,42 @@ export default function Index() {
     }
   };
 
-  // Simulate real-time updates
+  // Real-time updates
   useEffect(() => {
-    if (!isMonitoring) return;
+    if (!isMonitoring || !hashtag.trim()) return;
 
-    const interval = setInterval(() => {
-      // Add new mock post
-      const newPost: Post = {
-        id: `post-${Date.now()}`,
-        content: `New post about ${hashtag} - ${Math.random() > 0.5 ? 'positive' : 'critical'} sentiment`,
-        sentiment: Math.random() > 0.6 ? "positive" : Math.random() > 0.3 ? "neutral" : "negative",
-        confidence: Math.random() * 0.4 + 0.6,
-        timestamp: new Date().toLocaleTimeString(),
-        author: `@realtime_user`
-      };
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/sentiment/${encodeURIComponent(hashtag.trim())}/new`);
+        if (response.ok) {
+          const data = await response.json();
 
-      setPosts(prev => [newPost, ...prev.slice(0, 19)]);
-      setTotalPosts(prev => prev + 1);
+          if (data.posts && data.posts.length > 0) {
+            setPosts(prev => [...data.posts, ...prev.slice(0, 50)]); // Keep latest 50 posts
+          }
 
-      // Update sentiment data
-      setSentimentData(prev => {
-        const newData = [...prev];
-        const latest = newData[newData.length - 1];
-        const updated = {
-          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-          positive: latest.positive + (Math.random() - 0.5) * 5,
-          neutral: latest.neutral + (Math.random() - 0.5) * 3,
-          negative: latest.negative + (Math.random() - 0.5) * 4
-        };
-        return [...newData.slice(1), updated];
-      });
+          if (data.newSentimentData) {
+            setSentimentData(prev => [...prev.slice(1), data.newSentimentData]);
+          }
+
+          if (data.stats) {
+            setStats(data.stats);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching new posts:', error);
+      }
     }, 3000);
 
     return () => clearInterval(interval);
   }, [isMonitoring, hashtag]);
+
+  // Load initial data when hashtag changes
+  useEffect(() => {
+    if (hashtag.trim()) {
+      fetchHashtagData(hashtag.trim());
+    }
+  }, [hashtag]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
