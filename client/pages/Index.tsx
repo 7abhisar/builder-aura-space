@@ -296,7 +296,11 @@ export default function Index() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="value" fill={(entry) => entry.color} />
+                    <Bar dataKey="value">
+                      {sentimentDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
