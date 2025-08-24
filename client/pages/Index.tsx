@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { Search, TrendingUp, MessageCircle, Activity } from "lucide-react";
+import { SentimentPost, SentimentData, SentimentStats, StartMonitoringRequest, SentimentStreamResponse } from "@shared/api";
 
 interface SentimentData {
   timestamp: string;
