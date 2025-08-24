@@ -133,11 +133,31 @@ export default function Index() {
     } catch (error) {
       console.error('Error fetching hashtag data:', error);
       console.error('Error type:', typeof error);
-      console.error('Error details:', {
+
+      // Better error serialization
+      let errorDetails;
+      try {
+        errorDetails = JSON.stringify(error, Object.getOwnPropertyNames(error));
+      } catch {
+        errorDetails = String(error);
+      }
+
+      console.error('Error details (JSON):', errorDetails);
+      console.error('Error details (object):', {
         name: error instanceof Error ? error.name : 'Unknown',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : 'No stack'
+        stack: error instanceof Error ? error.stack : 'No stack',
+        cause: error instanceof Error ? error.cause : undefined
       });
+
+      // Test basic connectivity
+      console.log('Testing basic connectivity...');
+      try {
+        await fetch('/api/ping');
+        console.log('Basic ping successful');
+      } catch (pingError) {
+        console.error('Basic ping failed:', pingError);
+      }
       // Set default empty state on error
       setSentimentData([]);
       setPosts([]);
