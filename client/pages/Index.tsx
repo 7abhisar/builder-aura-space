@@ -86,14 +86,24 @@ export default function Index() {
 
   // Fetch existing data for hashtag
   const fetchHashtagData = async (tag: string) => {
+    console.log('fetchHashtagData called with tag:', tag);
     try {
-      const response = await fetch(`/api/sentiment/${encodeURIComponent(tag)}`, {
+      const url = `/api/sentiment/${encodeURIComponent(tag)}`;
+      console.log('Making fetch request to:', url);
+
+      const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
         },
+        // Add cache control to prevent caching issues
+        cache: 'no-cache',
       });
+
+      console.log('Fetch response:', response.status, response.statusText);
+
       if (response.ok) {
         const data: SentimentStreamResponse = await response.json();
+        console.log('Successfully fetched data:', data);
         setSentimentData(data.sentimentData);
         setPosts(data.posts);
         setStats(data.stats);
@@ -103,6 +113,12 @@ export default function Index() {
       }
     } catch (error) {
       console.error('Error fetching hashtag data:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : 'No stack'
+      });
       // Set default empty state on error
       setSentimentData([]);
       setPosts([]);
