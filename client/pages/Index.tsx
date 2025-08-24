@@ -10,64 +10,10 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell
 import { Search, TrendingUp, MessageCircle, Activity } from "lucide-react";
 import { SentimentPost, SentimentData, SentimentStats, StartMonitoringRequest, SentimentStreamResponse } from "@shared/api";
 
-interface SentimentData {
-  timestamp: string;
-  positive: number;
-  neutral: number;
-  negative: number;
-}
-
-interface Post {
-  id: string;
-  content: string;
-  sentiment: "positive" | "neutral" | "negative";
-  confidence: number;
-  timestamp: string;
-  author: string;
-}
-
 const COLORS = {
   positive: "#10b981",
-  neutral: "#6b7280", 
+  neutral: "#6b7280",
   negative: "#ef4444"
-};
-
-// Mock data for development
-const generateMockSentimentData = (): SentimentData[] => {
-  const data = [];
-  const now = new Date();
-  for (let i = 23; i >= 0; i--) {
-    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
-    data.push({
-      timestamp: timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      positive: Math.floor(Math.random() * 30) + 40,
-      neutral: Math.floor(Math.random() * 20) + 25,
-      negative: Math.floor(Math.random() * 25) + 10
-    });
-  }
-  return data;
-};
-
-const generateMockPosts = (): Post[] => {
-  const mockPosts = [
-    "This campaign is amazing! Love the message #campaign",
-    "Not sure about this approach, seems risky #campaign",
-    "Absolutely brilliant strategy! #campaign",
-    "I have mixed feelings about this #campaign",
-    "This is terrible, completely disagree #campaign",
-    "Great initiative, hope it succeeds #campaign",
-    "Neutral stance on this topic #campaign",
-    "Outstanding work by the team #campaign"
-  ];
-  
-  return mockPosts.map((content, index) => ({
-    id: `post-${index}`,
-    content,
-    sentiment: Math.random() > 0.6 ? "positive" : Math.random() > 0.3 ? "neutral" : "negative" as "positive" | "neutral" | "negative",
-    confidence: Math.random() * 0.4 + 0.6,
-    timestamp: new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString(),
-    author: `@user${index + 1}`
-  }));
 };
 
 export default function Index() {
