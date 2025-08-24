@@ -181,8 +181,13 @@ export default function Index() {
   useEffect(() => {
     if (hashtag.trim()) {
       // Add a small delay to ensure server is ready
-      const timer = setTimeout(() => {
-        fetchHashtagData(hashtag.trim());
+      const timer = setTimeout(async () => {
+        try {
+          console.log('useEffect: Loading initial data for hashtag:', hashtag.trim());
+          await fetchHashtagData(hashtag.trim());
+        } catch (error) {
+          console.error('useEffect: Error loading initial hashtag data:', error);
+        }
       }, 100);
 
       return () => clearTimeout(timer);
