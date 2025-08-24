@@ -260,7 +260,7 @@ export default function Index() {
                 className="h-[300px]"
               >
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={sentimentData}>
+                  <LineChart data={chartSentimentData}>
                     <XAxis dataKey="timestamp" />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -308,7 +308,7 @@ export default function Index() {
           <CardHeader>
             <CardTitle>Live Posts Feed</CardTitle>
             <CardDescription>
-              Recent posts with sentiment analysis • Updates every 3 seconds when monitoring
+              Recent posts with sentiment analysis �� Updates every 3 seconds when monitoring
             </CardDescription>
           </CardHeader>
           <CardContent>
