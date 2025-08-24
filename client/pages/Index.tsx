@@ -163,11 +163,12 @@ export default function Index() {
                   className="w-64"
                 />
               </div>
-              <Button 
+              <Button
                 onClick={isMonitoring ? handleStopMonitoring : handleStartMonitoring}
                 variant={isMonitoring ? "destructive" : "default"}
+                disabled={loading}
               >
-                {isMonitoring ? "Stop Monitoring" : "Start Monitoring"}
+                {loading ? "Loading..." : isMonitoring ? "Stop Monitoring" : "Start Monitoring"}
               </Button>
             </div>
           </div>
@@ -308,7 +309,7 @@ export default function Index() {
           <CardHeader>
             <CardTitle>Live Posts Feed</CardTitle>
             <CardDescription>
-              Recent posts with sentiment analysis �� Updates every 3 seconds when monitoring
+              Recent posts with sentiment analysis • Updates every 3 seconds when monitoring
             </CardDescription>
           </CardHeader>
           <CardContent>
