@@ -46,23 +46,37 @@ export default function Index() {
   const handleStartMonitoring = async () => {
     if (!hashtag.trim()) return;
 
+    console.log('Starting monitoring for hashtag:', hashtag.trim());
     setLoading(true);
     try {
-      const response = await fetch('/api/sentiment/start', {
+      const url = '/api/sentiment/start';
+      console.log('Making POST request to:', url);
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hashtag: hashtag.trim() } as StartMonitoringRequest)
+        body: JSON.stringify({ hashtag: hashtag.trim() } as StartMonitoringRequest),
+        cache: 'no-cache',
       });
+
+      console.log('Start monitoring response:', response.status, response.statusText);
 
       if (response.ok) {
         const data: SentimentStreamResponse = await response.json();
+        console.log('Successfully started monitoring:', data);
         setSentimentData(data.sentimentData);
         setPosts(data.posts);
         setStats(data.stats);
         setIsMonitoring(data.isActive);
+      } else {
+        console.error('Failed to start monitoring:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error starting monitoring:', error);
+      console.error('Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error)
+      });
     } finally {
       setLoading(false);
     }
