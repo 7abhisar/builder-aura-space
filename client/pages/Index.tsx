@@ -87,16 +87,33 @@ export default function Index() {
   // Fetch existing data for hashtag
   const fetchHashtagData = async (tag: string) => {
     try {
-      const response = await fetch(`/api/sentiment/${encodeURIComponent(tag)}`);
+      const response = await fetch(`/api/sentiment/${encodeURIComponent(tag)}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       if (response.ok) {
         const data: SentimentStreamResponse = await response.json();
         setSentimentData(data.sentimentData);
         setPosts(data.posts);
         setStats(data.stats);
         setIsMonitoring(data.isActive);
+      } else {
+        console.error('Failed to fetch hashtag data:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching hashtag data:', error);
+      // Set default empty state on error
+      setSentimentData([]);
+      setPosts([]);
+      setStats({
+        totalPosts: 0,
+        positivePosts: 0,
+        neutralPosts: 0,
+        negativePosts: 0,
+        avgSentiment: 0
+      });
+      setIsMonitoring(false);
     }
   };
 
