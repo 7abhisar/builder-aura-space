@@ -184,9 +184,9 @@ export default function Index() {
               <MessageCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalPosts.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{stats.totalPosts.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                +12 from last hour
+                {isMonitoring ? "Live monitoring" : "Historical data"}
               </p>
             </CardContent>
           </Card>
