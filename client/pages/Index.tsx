@@ -103,12 +103,10 @@ export default function Index() {
   const fetchHashtagData = async (tag: string) => {
     console.log('fetchHashtagData called with tag:', tag);
     try {
-      // Try to determine the correct base URL
-      const baseUrl = window.location.origin;
-      const url = `${baseUrl}/api/sentiment/${encodeURIComponent(tag)}`;
+      // Use simple relative URL
+      const url = `/api/sentiment/${encodeURIComponent(tag)}`;
       console.log('Making fetch request to:', url);
-      console.log('Current origin:', baseUrl);
-      console.log('User agent:', navigator.userAgent);
+      console.log('Current location:', window.location.href);
 
       const response = await fetch(url, {
         headers: {
