@@ -7,7 +7,7 @@ import {
   stopMonitoring,
   getHashtagData,
   getNewPosts,
-  getMonitoringStatus
+  getMonitoringStatus,
 } from "./routes/sentiment";
 
 export function createServer() {
