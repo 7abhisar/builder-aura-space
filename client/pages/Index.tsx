@@ -147,10 +147,15 @@ export default function Index() {
     return () => clearInterval(interval);
   }, [isMonitoring, hashtag]);
 
-  // Load initial data when hashtag changes
+  // Load initial data when hashtag changes with delay
   useEffect(() => {
     if (hashtag.trim()) {
-      fetchHashtagData(hashtag.trim());
+      // Add a small delay to ensure server is ready
+      const timer = setTimeout(() => {
+        fetchHashtagData(hashtag.trim());
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
   }, [hashtag]);
 
