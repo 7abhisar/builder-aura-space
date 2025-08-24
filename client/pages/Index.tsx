@@ -1,61 +1,336 @@
-import { DemoResponse } from "@shared/api";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
+import { Search, TrendingUp, MessageCircle, Activity } from "lucide-react";
+
+interface SentimentData {
+  timestamp: string;
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
+interface Post {
+  id: string;
+  content: string;
+  sentiment: "positive" | "neutral" | "negative";
+  confidence: number;
+  timestamp: string;
+  author: string;
+}
+
+const COLORS = {
+  positive: "#10b981",
+  neutral: "#6b7280", 
+  negative: "#ef4444"
+};
+
+// Mock data for development
+const generateMockSentimentData = (): SentimentData[] => {
+  const data = [];
+  const now = new Date();
+  for (let i = 23; i >= 0; i--) {
+    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
+    data.push({
+      timestamp: timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      positive: Math.floor(Math.random() * 30) + 40,
+      neutral: Math.floor(Math.random() * 20) + 25,
+      negative: Math.floor(Math.random() * 25) + 10
+    });
+  }
+  return data;
+};
+
+const generateMockPosts = (): Post[] => {
+  const mockPosts = [
+    "This campaign is amazing! Love the message #campaign",
+    "Not sure about this approach, seems risky #campaign",
+    "Absolutely brilliant strategy! #campaign",
+    "I have mixed feelings about this #campaign",
+    "This is terrible, completely disagree #campaign",
+    "Great initiative, hope it succeeds #campaign",
+    "Neutral stance on this topic #campaign",
+    "Outstanding work by the team #campaign"
+  ];
+  
+  return mockPosts.map((content, index) => ({
+    id: `post-${index}`,
+    content,
+    sentiment: Math.random() > 0.6 ? "positive" : Math.random() > 0.3 ? "neutral" : "negative" as "positive" | "neutral" | "negative",
+    confidence: Math.random() * 0.4 + 0.6,
+    timestamp: new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString(),
+    author: `@user${index + 1}`
+  }));
+};
 
 export default function Index() {
-  const [exampleFromServer, setExampleFromServer] = useState("");
-  // Fetch users on component mount
-  useEffect(() => {
-    fetchDemo();
-  }, []);
+  const [hashtag, setHashtag] = useState("#campaign");
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [sentimentData, setSentimentData] = useState<SentimentData[]>(generateMockSentimentData());
+  const [posts, setPosts] = useState<Post[]>(generateMockPosts());
+  const [totalPosts, setTotalPosts] = useState(1247);
 
-  // Example of how to fetch data from the server (if needed)
-  const fetchDemo = async () => {
-    try {
-      const response = await fetch("/api/demo");
-      const data = (await response.json()) as DemoResponse;
-      setExampleFromServer(data.message);
-    } catch (error) {
-      console.error("Error fetching hello:", error);
-    }
+  // Calculate sentiment distribution
+  const sentimentDistribution = [
+    { name: "Positive", value: posts.filter(p => p.sentiment === "positive").length, color: COLORS.positive },
+    { name: "Neutral", value: posts.filter(p => p.sentiment === "neutral").length, color: COLORS.neutral },
+    { name: "Negative", value: posts.filter(p => p.sentiment === "negative").length, color: COLORS.negative }
+  ];
+
+  const handleStartMonitoring = () => {
+    setIsMonitoring(true);
+    // In a real app, this would start the websocket connection
   };
 
+  const handleStopMonitoring = () => {
+    setIsMonitoring(false);
+  };
+
+  // Simulate real-time updates
+  useEffect(() => {
+    if (!isMonitoring) return;
+
+    const interval = setInterval(() => {
+      // Add new mock post
+      const newPost: Post = {
+        id: `post-${Date.now()}`,
+        content: `New post about ${hashtag} - ${Math.random() > 0.5 ? 'positive' : 'critical'} sentiment`,
+        sentiment: Math.random() > 0.6 ? "positive" : Math.random() > 0.3 ? "neutral" : "negative",
+        confidence: Math.random() * 0.4 + 0.6,
+        timestamp: new Date().toLocaleTimeString(),
+        author: `@realtime_user`
+      };
+
+      setPosts(prev => [newPost, ...prev.slice(0, 19)]);
+      setTotalPosts(prev => prev + 1);
+
+      // Update sentiment data
+      setSentimentData(prev => {
+        const newData = [...prev];
+        const latest = newData[newData.length - 1];
+        const updated = {
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          positive: latest.positive + (Math.random() - 0.5) * 5,
+          neutral: latest.neutral + (Math.random() - 0.5) * 3,
+          negative: latest.negative + (Math.random() - 0.5) * 4
+        };
+        return [...newData.slice(1), updated];
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isMonitoring, hashtag]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="text-center">
-        {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
-          <svg
-            className="animate-spin h-8 w-8 text-slate-400"
-            viewBox="0 0 50 50"
-          >
-            <circle
-              className="opacity-30"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-            />
-            <circle
-              className="text-slate-600"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="100"
-              strokeDashoffset="75"
-            />
-          </svg>
-          Generating your app...
-        </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
-        </p>
-        <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      {/* Header */}
+      <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Activity className="h-8 w-8 text-blue-600" />
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">SentimentStream</h1>
+              </div>
+              <Badge variant="secondary" className="ml-4">
+                {isMonitoring ? "🟢 Live" : "⚪ Offline"}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Search className="h-4 w-4 text-slate-500" />
+                <Input
+                  placeholder="Enter hashtag..."
+                  value={hashtag}
+                  onChange={(e) => setHashtag(e.target.value)}
+                  className="w-64"
+                />
+              </div>
+              <Button 
+                onClick={isMonitoring ? handleStopMonitoring : handleStartMonitoring}
+                variant={isMonitoring ? "destructive" : "default"}
+              >
+                {isMonitoring ? "Stop Monitoring" : "Start Monitoring"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dashboard Content */}
+      <div className="container mx-auto px-4 py-6">
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalPosts.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                +12 from last hour
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Positive</CardTitle>
+              <div className="h-3 w-3 rounded-full bg-green-500"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {Math.round((sentimentDistribution[0].value / posts.length) * 100)}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {sentimentDistribution[0].value} posts
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Neutral</CardTitle>
+              <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-600">
+                {Math.round((sentimentDistribution[1].value / posts.length) * 100)}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {sentimentDistribution[1].value} posts
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Negative</CardTitle>
+              <div className="h-3 w-3 rounded-full bg-red-500"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {Math.round((sentimentDistribution[2].value / posts.length) * 100)}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {sentimentDistribution[2].value} posts
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Sentiment Trends */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <TrendingUp className="h-5 w-5" />
+                <span>Sentiment Trends (24h)</span>
+              </CardTitle>
+              <CardDescription>
+                Real-time sentiment analysis over time
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  positive: { label: "Positive", color: COLORS.positive },
+                  neutral: { label: "Neutral", color: COLORS.neutral },
+                  negative: { label: "Negative", color: COLORS.negative }
+                }}
+                className="h-[300px]"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={sentimentData}>
+                    <XAxis dataKey="timestamp" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line type="monotone" dataKey="positive" stroke={COLORS.positive} strokeWidth={2} />
+                    <Line type="monotone" dataKey="neutral" stroke={COLORS.neutral} strokeWidth={2} />
+                    <Line type="monotone" dataKey="negative" stroke={COLORS.negative} strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Sentiment Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Sentiment Distribution</CardTitle>
+              <CardDescription>
+                Overall sentiment breakdown
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  positive: { label: "Positive", color: COLORS.positive },
+                  neutral: { label: "Neutral", color: COLORS.neutral },
+                  negative: { label: "Negative", color: COLORS.negative }
+                }}
+                className="h-[300px]"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={sentimentDistribution}>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="value" fill={(entry) => entry.color} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Live Posts Feed */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Live Posts Feed</CardTitle>
+            <CardDescription>
+              Recent posts with sentiment analysis • Updates every 3 seconds when monitoring
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[400px]">
+              <div className="space-y-4">
+                {posts.map((post, index) => (
+                  <div key={post.id} className="flex items-start space-x-3 p-4 rounded-lg border bg-card">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-blue-600">{post.author}</span>
+                        <div className="flex items-center space-x-2">
+                          <Badge 
+                            variant={post.sentiment === "positive" ? "default" : post.sentiment === "negative" ? "destructive" : "secondary"}
+                            className={
+                              post.sentiment === "positive" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" :
+                              post.sentiment === "negative" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" :
+                              "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+                            }
+                          >
+                            {post.sentiment} ({Math.round(post.confidence * 100)}%)
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{post.timestamp}</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{post.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
