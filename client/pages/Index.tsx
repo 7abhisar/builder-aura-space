@@ -198,10 +198,10 @@ export default function Index() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {Math.round((sentimentDistribution[0].value / posts.length) * 100)}%
+                {posts.length > 0 ? Math.round((stats.positivePosts / stats.totalPosts) * 100) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">
-                {sentimentDistribution[0].value} posts
+                {stats.positivePosts} posts
               </p>
             </CardContent>
           </Card>
@@ -213,10 +213,10 @@ export default function Index() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-600">
-                {Math.round((sentimentDistribution[1].value / posts.length) * 100)}%
+                {posts.length > 0 ? Math.round((stats.neutralPosts / stats.totalPosts) * 100) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">
-                {sentimentDistribution[1].value} posts
+                {stats.neutralPosts} posts
               </p>
             </CardContent>
           </Card>
@@ -228,10 +228,10 @@ export default function Index() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {Math.round((sentimentDistribution[2].value / posts.length) * 100)}%
+                {posts.length > 0 ? Math.round((stats.negativePosts / stats.totalPosts) * 100) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">
-                {sentimentDistribution[2].value} posts
+                {stats.negativePosts} posts
               </p>
             </CardContent>
           </Card>
