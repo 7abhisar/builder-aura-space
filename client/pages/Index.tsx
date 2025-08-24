@@ -49,7 +49,8 @@ export default function Index() {
     console.log('Starting monitoring for hashtag:', hashtag.trim());
     setLoading(true);
     try {
-      const url = '/api/sentiment/start';
+      const baseUrl = window.location.origin;
+      const url = `${baseUrl}/api/sentiment/start`;
       console.log('Making POST request to:', url);
 
       const response = await fetch(url, {
