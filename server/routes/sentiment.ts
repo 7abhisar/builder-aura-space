@@ -158,4 +158,73 @@ export const getHashtagData: RequestHandler = (req, res) => {
     return res.status(400).json({ error: "Hashtag is required" });
   }
   
-  const posts = postsHistory.get(hashtag) || [];\n  const sentimentData = sentimentHistory.get(hashtag) || [];\n  const isActive = activeMonitoring.get(hashtag) || false;\n  const stats = calculateStats(posts);\n  \n  const response: SentimentStreamResponse = {\n    posts,\n    sentimentData,\n    stats,\n    isActive\n  };\n  \n  res.json(response);\n};\n\n// Get new posts for a hashtag (simulates real-time updates)\nexport const getNewPosts: RequestHandler = (req, res) => {\n  const { hashtag } = req.params;\n  \n  if (!hashtag) {\n    return res.status(400).json({ error: \"Hashtag is required\" });\n  }\n  \n  const isActive = activeMonitoring.get(hashtag);\n  \n  if (!isActive) {\n    return res.json({ posts: [], newSentimentData: null });\n  }\n  \n  // Generate 1-3 new posts\n  const newPostsCount = Math.floor(Math.random() * 3) + 1;\n  const newPosts = Array.from({ length: newPostsCount }, () => generateMockPost(hashtag));\n  \n  // Update posts history\n  const currentPosts = postsHistory.get(hashtag) || [];\n  const updatedPosts = [...newPosts, ...currentPosts].slice(0, 100); // Keep only latest 100\n  postsHistory.set(hashtag, updatedPosts);\n  \n  // Update sentiment data with latest point\n  const currentSentimentData = sentimentHistory.get(hashtag) || [];\n  const newSentimentPoint: SentimentData = {\n    timestamp: new Date().toISOString(),\n    positive: Math.floor(Math.random() * 30) + 40,\n    neutral: Math.floor(Math.random() * 20) + 25,\n    negative: Math.floor(Math.random() * 25) + 10\n  };\n  \n  const updatedSentimentData = [...currentSentimentData.slice(1), newSentimentPoint];\n  sentimentHistory.set(hashtag, updatedSentimentData);\n  \n  const stats = calculateStats(updatedPosts);\n  \n  res.json({\n    posts: newPosts,\n    newSentimentData: newSentimentPoint,\n    stats\n  });\n};\n\n// Get monitoring status\nexport const getMonitoringStatus: RequestHandler = (req, res) => {\n  const activeHashtags = Array.from(activeMonitoring.entries())\n    .filter(([_, isActive]) => isActive)\n    .map(([hashtag, _]) => hashtag);\n  \n  res.json({\n    activeHashtags,\n    totalActive: activeHashtags.length\n  });\n};
+  const posts = postsHistory.get(hashtag) || [];
+  const sentimentData = sentimentHistory.get(hashtag) || [];
+  const isActive = activeMonitoring.get(hashtag) || false;
+  const stats = calculateStats(posts);
+  
+  const response: SentimentStreamResponse = {
+    posts,
+    sentimentData,
+    stats,
+    isActive
+  };
+  
+  res.json(response);
+};
+
+// Get new posts for a hashtag (simulates real-time updates)
+export const getNewPosts: RequestHandler = (req, res) => {
+  const { hashtag } = req.params;
+  
+  if (!hashtag) {
+    return res.status(400).json({ error: "Hashtag is required" });
+  }
+  
+  const isActive = activeMonitoring.get(hashtag);
+  
+  if (!isActive) {
+    return res.json({ posts: [], newSentimentData: null });
+  }
+  
+  // Generate 1-3 new posts
+  const newPostsCount = Math.floor(Math.random() * 3) + 1;
+  const newPosts = Array.from({ length: newPostsCount }, () => generateMockPost(hashtag));
+  
+  // Update posts history
+  const currentPosts = postsHistory.get(hashtag) || [];
+  const updatedPosts = [...newPosts, ...currentPosts].slice(0, 100); // Keep only latest 100
+  postsHistory.set(hashtag, updatedPosts);
+  
+  // Update sentiment data with latest point
+  const currentSentimentData = sentimentHistory.get(hashtag) || [];
+  const newSentimentPoint: SentimentData = {
+    timestamp: new Date().toISOString(),
+    positive: Math.floor(Math.random() * 30) + 40,
+    neutral: Math.floor(Math.random() * 20) + 25,
+    negative: Math.floor(Math.random() * 25) + 10
+  };
+  
+  const updatedSentimentData = [...currentSentimentData.slice(1), newSentimentPoint];
+  sentimentHistory.set(hashtag, updatedSentimentData);
+  
+  const stats = calculateStats(updatedPosts);
+  
+  res.json({
+    posts: newPosts,
+    newSentimentData: newSentimentPoint,
+    stats
+  });
+};
+
+// Get monitoring status
+export const getMonitoringStatus: RequestHandler = (req, res) => {
+  const activeHashtags = Array.from(activeMonitoring.entries())
+    .filter(([_, isActive]) => isActive)
+    .map(([hashtag, _]) => hashtag);
+  
+  res.json({
+    activeHashtags,
+    totalActive: activeHashtags.length
+  });
+};
